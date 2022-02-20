@@ -1,39 +1,35 @@
 use std::io;
 use std::io::Read;
 use std::str::FromStr;
+use std::collections::HashMap;
 
 fn main() {
-    let n = read::<usize>();
-    let q = read::<usize>();
+    let n = read::<i32>();
+    let q = read::<i32>();
 
-    let a = (1..=n).into_iter()
-                   .map(|_| read::<i32>())
-                   .enumerate()
-                   .collect::<Vec<(usize, i32)>>();
+    let mut a = HashMap::<i32, Vec<i32>>::new();
 
-    let xk = (1..=q).into_iter()
-                    .map(|_| (read::<i32>(), read::<i32>()))
-                    .collect::<Vec<(i32, i32)>>();
+    (1..=n).into_iter()
+           .map(|index| (read::<i32>(), index))
+           .for_each(|(num, index)| a.entry(num).or_insert(Vec::<i32>::new()).push(index));
 
-    xk.into_iter()
-      .map(|(x, k)| get_index(x, k, &a))
-      .for_each(|index| println!("{}", if 0 <= index {index + 1} else {index}));
+    (1..=q).into_iter()
+           .map(|_| (read::<i32>(), read::<usize>()))
+           .map(|(x, k)| search(k, a.get(&x)))
+           .for_each(|ans| println!("{}", ans));
 }
 
-fn get_index(x: i32, mut k: i32, a: &Vec<(usize, i32)>) -> i32 {
-    let mut ans = -1;
-
-    for &(index, num) in a {
-        if x == num {
-            k -= 1;
-
-            if k == 0 {
-                ans = index as i32;
+fn search(k: usize, indexes: Option<&Vec<i32>>) -> i32 {
+    match indexes {
+        Some(indexes) => {
+            match indexes.get(k - 1) {
+                Some(&index) => index,
+                None => -1,
             }
-        }
+        },
+
+        None => -1,
     }
-    
-    ans
 }
 
 fn read<T: FromStr>() -> T {
